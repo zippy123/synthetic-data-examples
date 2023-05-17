@@ -52,7 +52,7 @@ with rep.new_layer():
 
     # Define randomizer function for Base assets. This randomization includes placement and rotation of the assets on the surface.
     def random_props(file_name, class_name, max_number=1, one_in_n_chance=3):
-        instances = rep.randomizer.instantiate(file_name, size=max_number, mode="scene_instance")
+        instances = rep.randomizer.instantiate(file_name, size=max_number, mode="reference")
         print(file_name)
         with instances:
             rep.modify.semantics([("class", class_name)])
@@ -86,16 +86,17 @@ with rep.new_layer():
     crate = rep.create.from_usd(CRATE)
     with crate:
         rep.physics.collider("none")
+        # rep.physics.collider("convex_hull")
         rep.physics.mass(mass=10000)
         rep.modify.pose(position=(0, 20, 0), rotation=(0, 0, 90))
 
     # Setup camera and attach it to render product
     camera = rep.create.camera()
-    render_product = rep.create.render_product(camera, resolution=(1024, 1024))
+    render_product = rep.create.render_product(camera, resolution=(224,224))
 
     rep.randomizer.register(sphere_lights)
     # trigger on frame for an interval
-    with rep.trigger.on_frame(num_frames=100):
+    with rep.trigger.on_frame(num_frames=300, rt_subframes=3):
         for n, f in FRUIT_PROPS.items():
             random_props(f, n)
         rep.randomizer.sphere_lights(5)
@@ -105,7 +106,9 @@ with rep.new_layer():
     # Initialize and attach writer
     writer = rep.WriterRegistry.get("BasicWriter")
     now = now.strftime("%Y-%m-%d")
-    output_dir = "fruit_data_" + now
+    # output_dir = "fruit_data_" + now
+    output_dir = r"C:\Users\Dave Holden\Documents\ReplicatorScripts\assets5"
+
     writer.initialize(output_dir=output_dir, rgb=True, bounding_box_2d_tight=True)
     writer.attach([render_product])
 
